@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ethertip Withdraw</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+
+</head>
+<body>
+    <div class="panel panel-default">
+        <div class="jumbotron">
+            <div class="container">
+                <h1>Ethertip Withdraw</h1>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h4>Balance of Ether pool</h4>
+        <p id="eAddress"></p>
+        <p id="eBalance"></p>
+
+        <h4>Balance of Validator</h4>
+        <p id="vAddress"></p>
+        <p id="vBalance"></p>
+
+        <button class="btn btn-primary" onclick="withdraw();">Withdraw</button>
+        <button class="btn btn-primary" onclick="window.open('./register.html')">Go to registeration</button>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script language="javascript" type="text/javascript" src="./web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="./contract_abi.js"></script>
+    <script>
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var id = url.searchParams.get("id");
+    var value = url.searchParams.get("value");
+    var sig = url.searchParams.get("sig");
+
+    var contract;
+    var userAccount;
+    var web3js;
+
+    function startApp() {
+        //Replace "YOUR_CONTRACT_ADDRESS" with your contract address
+        var contractAddress = "";
+        var validatorAddress = "";
+
+        contract = new web3js.eth.Contract(contractABI, contractAddress);
+
+        var accountInterval = setInterval(function () {
+            web3.eth.getAccounts((error, accounts) => {
+                if (accounts[0] !== userAccount) {
+                    userAccount = accounts[0];
+
+                    web3js.eth.getBalance(contractAddress)
+                    .then(function(val){
+                        document.getElementById("eAddress").innerHTML = contractAddress;
+                        document.getElementById("eBalance").innerHTML = web3js.utils.fromWei(val) + "ETH";
+                    });
+
+                    web3js.eth.getBalance(validatorAddress)
+                    .then(function(val){
+                        document.getElementById("vAddress").innerHTML = validatorAddress;
+                        document.getElementById("vBalance").innerHTML = web3js.utils.fromWei(val) + "ETH";
+                    });
+                }
+            });
+        }, 100);
+    }
+
+    window.addEventListener('load', function () {
+        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        if (typeof web3 !== 'undefined') {
+            // Use Mist/MetaMask's provider
+            web3js = new Web3(web3.currentProvider);
+        } else {
+            // Handle the case where the user doesn't have Metamask installed
+            // Probably show them a message prompting them to install Metamask
+        }
+        // Now you can start your app & access web3 freely:
+        startApp()
+    })
+
+    function withdraw(){
+        contract.methods.withdraw(id,value,sig)
+        .send({
+            from: userAccount,
+        })
+        .on("transactionHash", function (txhash) {
+            console.log(txhash);
+        })
+        .on("receipt", function (receipt) {
+            console.log(receipt)
+        })
+        .on("error", function (error) {
+            console.log(error)
+        });
+    }
+
+    </script>
+</body>
+</html>

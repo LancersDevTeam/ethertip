@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Identity</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+</head>
+
+<body>
+    <div class="panel panel-default">
+        <div class="jumbotron">
+            <div class="container">
+                <h2>Identity (ERC725-735)</h2>
+                <button class="btn btn-primary" id="deploy" onclick="deploy();">Create Identity</button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h3>Claim Issuer</h3>
+        <p id="issuer"></p>
+        <h3>Your Identity</h3>
+        <p id="identity"></p>
+        <p id="claim"></p>
+    </div>
+    <div class="container" id="new" style="display:none">
+        <div class="form-group">
+            <label for="usr">Email:</label>
+            <input type="text" class="form-control" id="usr">
+        </div>
+        <div class="form-group">
+            <label for="pwd">Password:</label>
+            <input type="password" class="form-control" id="pwd">
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="button" id="add" disabled onclick="add();">Add Claim</button>
+            <button class="btn btn-primary" type="button" id="verify" disabled onclick="verify();">Verify</button>
+        </div>
+        <div class="form-group">
+            <p id="account">Account: </p>
+        </div>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+
+    <script>
+    var userAccount;
+    var web3js;
+
+    var identity;
+    var identityABI;
+    var identityByteCode;
+
+    var userRegistory;
+    var userRegistoryInstance;
+    var userRegistoryABI;
+    var userRegistoryAddress;
+
+    var issuerAddress;
+    var claimType = 0;
+
+    var claimVerifier;
+    var claimVerifierInstance;
+    var claimVerifierABI;
+    var claimVerifierAddress;
+
+    async function startApp() {
+        var version = await web3js.version.network;
+        if(version != 4){
+            alert("This is only working on Rinkeby now!")
+        }
+
+        await $.getJSON('contracts/Identity.json').then(function (data) {
+            identityABI = data.abi;
+            identityBytesCode = data.bytecode;
+        });
+
+        identity = web3js.eth.contract(identityABI);
+
+        await $.getJSON('contracts/UserRegistry.json').then(function (data) {
+            userRegistoryABI = data.abi;
+            userRegistoryAddress = "";
+        });
+
+        await $.getJSON('contracts/KeyHolder.json').then(function (data) {
+            issuerAddress = "";
+            document.getElementById("issuer").innerHTML = issuerAddress;
+        });
+
+        userRegistory = web3js.eth.contract(userRegistoryABI);
+        userRegistoryInstance = userRegistory.at(userRegistoryAddress);
+
+        await $.getJSON('contracts/ClaimVerifier.json').then(function (data) {
+            claimVerifierABI = data.abi;
+            claimVerifierAddress = "";
+        });
+
+        claimVerifier = web3js.eth.contract(claimVerifierABI);
+        claimVerifierInstance = claimVerifier.at(claimVerifierAddress);
+
+        var accountInterval = setInterval(function () {
+            web3.eth.getAccounts((error, accounts) => {
+                if (accounts[0] !== userAccount) {
+                    userAccount = accounts[0];
+                    displayIdentity()
+                }
+            });
+        }, 100);
+    }
+
+    window.addEventListener('load', function () {
+        if (typeof web3 !== 'undefined') {
+            web3js = new Web3(web3.currentProvider);
+        } else {
+
+        }
+        startApp()
+    })
+
+    function deploy() {
+        identity.new(userRegistoryAddress, {
+            from: userAccount,
+            data: identityBytesCode
+        }, function (err, myContract) {
+            if (!err) {
+                if (!myContract.address) {
+                    console.log(myContract.transactionHash)
+                } else {
+                    displayIdentity();
+                    document.getElementById("account").innerHTML = "Account: "
+                }
+            }
+        });
+    }
+
+    function add() {
+        userRegistoryInstance.users(userAccount, function (err, result) {
+            $.ajax({
+                method: 'POST',
+                url: 'API Gateway endpoint of lambda function' + 'add',
+                header: {
+                    "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                    "Access-Control-Allow-Methods": "DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT",
+                    "Access-Control-Allow-Credentials": "true",
+                    "Access-Control-Allow-Origin": "*"
+                },
+                data: {
+                    "identity": result,
+                    "claimType": 0,
+                    "id": document.getElementById("usr").value,
+                    "pass": document.getElementById("pwd").value
+                },
+                dataType: 'json',
+
+                success: function (data, textStatus, jqXHR) {
+                    if (data.status) {
+                        var identityInstance = identity.at(result);
+                        identityInstance.addClaim(
+                            claimType,
+                            0,
+                            issuerAddress,
+                            data.sig,
+                            data.data,
+                            "",
+                            function (err, result) {
+                                if (!err) {
+                                    console.log(result);
+                                }
+                            }
+                        );
+                    }
+                },
+
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('error');
+                }
+            })
+        });
+    }
+
+    function verify() {
+        userRegistoryInstance.users(userAccount, function (err, result) {
+            claimVerifierInstance.claimIsValid(result, claimType, function (err, result) {
+                if (result) {
+                    document.getElementById("account").innerHTML = document.getElementById("account").innerHTML + " <i class='fas fa-check' style='color:green'></i>"
+                } else {
+                    document.getElementById("account").innerHTML = document.getElementById("account").innerHTML + " <i class='fas fa-times' style='color:red'></i>"
+                }
+            });
+        });
+    }
+
+    function displayIdentity() {
+        userRegistoryInstance.users(userAccount, function (err, result) {
+            if (result != 0x0) {
+                document.getElementById("identity").innerHTML = result;
+                document.getElementById("deploy").innerHTML = "Replace Identity";
+                document.getElementById("add").disabled = false;
+                document.getElementById("verify").disabled = false;
+                document.getElementById("new").style.display = "block";
+                var identityInstance = identity.at(result);
+                var events = identityInstance.allEvents();
+                events.watch(function (error, event) {
+                    if (!error)
+                    if (event.event == "ClaimAdded") {
+                        identityInstance.getClaim(event.args.claimId, function (err, result) {
+                            document.getElementById("account").innerHTML = "Account: " + web3.toAscii(result[4]);
+                        });
+                    }
+                });
+            }
+        });
+    }
+    </script>
+</body>
+</html>

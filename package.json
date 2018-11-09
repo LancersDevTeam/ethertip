@@ -1,0 +1,46 @@
+{
+  "name": "botkit",
+  "version": "0.0.2",
+  "description": "A starter kit for building a custom Slack bot with Botkit Studio",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "aws-serverless-express": "^3.3.5",
+    "base64url": "^3.0.0",
+    "body-parser": "^1.18.3",
+    "botkit": "^0.6.19",
+    "botkit-storage-dynamodb": "^0.2.0",
+    "debug": "^4.0.1",
+    "dotenv": "^6.1.0",
+    "ethereumjs-util": "^6.0.0",
+    "ethereumjs-wallet": "^0.6.2",
+    "express": "^4.16.3",
+    "express-hbs": "^1.0.4",
+    "hoek": "^6.0.1",
+    "install": "^0.12.2",
+    "npm": "^6.4.1",
+    "sync-request": "^6.0.0",
+    "web3": "^0.20.7",
+    "web3-utils": "^1.0.0-beta.36"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LancersDevTeam/ethertip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LancersDevTeam/ethertip/issues"
+  },
+  "homepage": "https://github.com/LancersDevTeam/ethertip",
+  "keywords": [
+    "bots",
+    "chatbots",
+    "slack"
+  ],
+  "author": "LancersDevTeam",
+  "license": "Apache"
+}

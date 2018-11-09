@@ -1,0 +1,15 @@
+{
+    "name": "Ethertip",
+    "description": "Ethertip",
+    "repository": "https://github.com/LancersDevTeam/ethertip",
+    "keywords": ["node", "bots", "slack","botkit"],
+    "success_url":"/",
+    "env": {
+        "clientId": {
+            "description": "Client ID provided by Slack"
+        },
+        "clientSecret": {
+            "description": "Client Secret provided by Slack"
+        }
+    }
+}
