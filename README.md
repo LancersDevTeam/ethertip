@@ -55,7 +55,7 @@ Create Lambda function.
 -   clientId : Slackapp clientId
 -   clientSecret : Slackapp clientSecret
 -   PORT: localhost port number
--   EXPRESS_AWS_REGION : aws resion
+-   EXPRESS_AWS_REGION : AWS resion
 -   EXPRESS_AWS_ACCESS_KEY_ID : IAM user access key
 -   EXPRESS_AWS_SECRET_ACCESS_KEY: IAM user secret access key
 -   PRIV_KEY : contract secret key
@@ -157,16 +157,16 @@ Identify the part where the bug seems to come out and let it output to logs.
 Logs can be checked with CloudWatch.
 
 ## How to use
-- When you want to send a tip
+- When you want to send a tip  
 Send `moneybag`stamp to opponent.
 
-- When you want to check your tip
+- When you want to check your tip  
 You can check with `/wallet` command.
 
-- When you want to register a wallet
+- When you want to register a wallet  
 `/registe your_wallet_address`
 
--  When you want to withdraw Ether accumulated tip
+-  When you want to withdraw Ether accumulated tip  
 `/withdraw`
 
 ### Withdraw Ether accumulated tip
@@ -185,7 +185,7 @@ https://www.rinkeby.io/#stats
 #### Create Identity
 Create Identity from this page.
 `https://static_file_URL_on_S3/register.html`
-Press `Create Identity` to move to Metamask, set gas bill and press` Confirm`. (If you be stingy exaggerate gas bills, It takes time to CONFIRMED)
+Press `Create Identity` to move to Metamask, set gas bill and press `Confirm`. (If you be stingy exaggerate gas bills, It takes time to CONFIRMED)
 
 #### Authentication
 When you generate `Identity` you will get an item to enter` Email` and `Password`. Enter an appropriate value and press `Add Claim`. Then you fly to Metamask so pay the proper gas bill and press confirmation.
